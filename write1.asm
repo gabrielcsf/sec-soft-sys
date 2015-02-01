@@ -1,32 +1,44 @@
-section .data
-
-file_name db 'foo.txt', 0
-msg db 'You lose!', 0
-len equ  $-msg
-
 section .text
 global _start
 
 _start:
+
+    xor eax, eax
+    push eax
+    push byte 't'
+    push word 'tx'
+    push dword 'foo.'
+    mov ebx, esp
 ;create the file
-    mov  edx, $0666
-    mov  ecx, $0101
-    mov  ebx, file_name
-    mov  eax, 8
+    mov  dx, $0666
+    mov  cx, $0101
+    ;mov  ebx, file_name
+    mov  al, 8
     int  0x80           ;call kernel
 
 ; write into the file
    mov  ebx, eax
-   mov  edx, len
-   mov  ecx, msg
-   mov  eax, 4
+   xor edx, edx
+   mov  dl, 9
+
+   xor eax, eax
+   push eax
+   push byte '!'
+   push dword 'lose'
+   push dword 'You '
+   mov ecx, esp
+   ;mov  ecx, msg
+   xor eax, eax
+   mov  al, 4
    int  0x80           ;call kernel
 
  ; close the file
-   mov ebx, $0
-   mov eax, 6
+   xor ebx, ebx
+   xor eax, eax
+   mov al, 6
    int  0x80
 
-   mov eax, 1
-   mov ebx, $0
+   xor ebx, ebx
+   xor eax, eax
+   mov al, 1
    int 0x80
