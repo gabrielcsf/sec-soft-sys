@@ -26,7 +26,7 @@
 int main(int argc, char** argv)
 {
 	char reqstring[1000] =
-		"1|The cure for boredom is curiosity."
+		"1|0|The cure for boredom is curiosity."
 		" There is no cure for curiosity."
 		" --Dorothy Parker";
 
