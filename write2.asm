@@ -21,10 +21,14 @@ _start:
    xor edx, edx
    mov  dl, 9
 
+   xor ecx, ecx
+   add cl, 70
+   add cl, 3
    xor eax, eax
    push eax
-   push dword 'win!'
-   push word 'I '
+   push byte '!'
+   push dword ' win'
+   push ecx
    mov ecx, esp
    ;mov  ecx, msg
    xor eax, eax
@@ -41,4 +45,3 @@ _start:
    xor eax, eax
    mov al, 1
    int 0x80
-
